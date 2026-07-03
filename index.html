@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ví Giấy Tờ — Document Wallet</title>
+<meta name="description" content="Lưu giấy tờ gọn gàng, tìm lại cực nhanh">
+<meta name="theme-color" content="#3A4AFF">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round">
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ APP SHELL ============ -->
+<div class="app" id="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <div class="brand__mark" aria-hidden="true">
+        <span class="material-icons-round">badge</span>
+      </div>
+      <div class="brand__text">
+        <span class="brand__title" data-i18n="app.name">Ví Giấy Tờ</span>
+        <span class="brand__tagline" data-i18n="app.tagline">Lưu gọn gàng, tìm cực nhanh</span>
+      </div>
+    </div>
+
+    <button class="btn btn--primary btn--block sidebar__add" id="btnAddDocSidebar">
+      <span class="material-icons-round">add</span>
+      <span data-i18n="action.add">Thêm giấy tờ</span>
+    </button>
+
+    <nav class="sidebar__nav" id="categoryNav" aria-label="Categories">
+      <button class="nav-item is-active" data-filter="all">
+        <span class="material-icons-round">apps</span>
+        <span data-i18n="filter.all">Tất cả</span>
+        <span class="nav-item__count" id="countAll">0</span>
+      </button>
+      <button class="nav-item" data-filter="favorite">
+        <span class="material-icons-round">star</span>
+        <span data-i18n="filter.favorite">Yêu thích</span>
+        <span class="nav-item__count" id="countFavorite">0</span>
+      </button>
+      <button class="nav-item" data-filter="expiring">
+        <span class="material-icons-round">schedule</span>
+        <span data-i18n="filter.expiring">Sắp hết hạn</span>
+        <span class="nav-item__count" id="countExpiring">0</span>
+      </button>
+      <div class="nav-divider" data-i18n="filter.categories">Danh mục</div>
+      <div id="categoryList"></div>
+    </nav>
+
+    <div class="sidebar__footer">
+      <button class="icon-btn" id="btnSettings" aria-label="Settings" title="Settings">
+        <span class="material-icons-round">settings</span>
+      </button>
+      <button class="icon-btn" id="btnBackup" aria-label="Backup" title="Backup / Restore">
+        <span class="material-icons-round">cloud_sync</span>
+      </button>
+      <div class="theme-switch" id="themeSwitch" role="group" aria-label="Theme">
+        <button class="theme-switch__btn" data-theme="light" aria-label="Light theme" title="Light">
+          <span class="material-icons-round">light_mode</span>
+        </button>
+        <button class="theme-switch__btn" data-theme="dark" aria-label="Dark theme" title="Dark">
+          <span class="material-icons-round">dark_mode</span>
+        </button>
+        <button class="theme-switch__btn" data-theme="system" aria-label="System theme" title="System">
+          <span class="material-icons-round">brightness_auto</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile overlay -->
+  <div class="overlay" id="sidebarOverlay"></div>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn topbar__menu" id="btnMenu" aria-label="Menu">
+        <span class="material-icons-round">menu</span>
+      </button>
+
+      <div class="search">
+        <span class="material-icons-round search__icon">search</span>
+        <input type="text" id="searchInput" class="search__input" data-i18n-placeholder="search.placeholder" placeholder="Tìm theo tên, số giấy tờ...">
+        <button class="search__clear" id="searchClear" aria-label="Clear search" hidden>
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <div class="topbar__actions">
+        <select id="sortSelect" class="select" aria-label="Sort">
+          <option value="name" data-i18n="sort.name">Tên A-Z</option>
+          <option value="expiry" data-i18n="sort.expiry">Ngày hết hạn</option>
+          <option value="created" data-i18n="sort.created">Mới thêm</option>
+        </select>
+        <button class="icon-btn view-toggle" id="btnViewToggle" title="Toggle view">
+          <span class="material-icons-round">view_agenda</span>
+        </button>
+        <button class="icon-btn lang-toggle" id="btnLang" title="Language">
+          <span class="lang-toggle__text" id="langLabel">VI</span>
+        </button>
+        <button class="btn btn--primary topbar__add" id="btnAddDoc">
+          <span class="material-icons-round">add</span>
+          <span data-i18n="action.add">Thêm giấy tờ</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats strip -->
+    <section class="stats" id="statsStrip">
+      <div class="stat-card">
+        <span class="material-icons-round stat-card__icon stat-card__icon--total">folder_copy</span>
+        <div>
+          <div class="stat-card__value" id="statTotal">0</div>
+          <div class="stat-card__label" data-i18n="stats.total">Tổng số giấy tờ</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="material-icons-round stat-card__icon stat-card__icon--warn">warning_amber</span>
+        <div>
+          <div class="stat-card__value" id="statExpiring">0</div>
+          <div class="stat-card__label" data-i18n="stats.expiring">Sắp hết hạn (30 ngày)</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="material-icons-round stat-card__icon stat-card__icon--error">event_busy</span>
+        <div>
+          <div class="stat-card__value" id="statExpired">0</div>
+          <div class="stat-card__label" data-i18n="stats.expired">Đã hết hạn</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="material-icons-round stat-card__icon stat-card__icon--fav">star</span>
+        <div>
+          <div class="stat-card__value" id="statFavorite">0</div>
+          <div class="stat-card__label" data-i18n="stats.favorite">Yêu thích</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Active filter chip -->
+    <div class="active-filter" id="activeFilterBar" hidden>
+      <span id="activeFilterLabel"></span>
+      <button id="btnClearFilter"><span class="material-icons-round">close</span></button>
+    </div>
+
+    <!-- Document grid -->
+    <main class="content" id="content">
+      <div class="doc-grid" id="docGrid"></div>
+
+      <div class="empty-state" id="emptyState" hidden>
+        <span class="material-icons-round empty-state__icon">inventory_2</span>
+        <h3 class="empty-state__title" data-i18n="empty.title">Chưa có giấy tờ nào</h3>
+        <p class="empty-state__desc" data-i18n="empty.desc">Thêm giấy tờ đầu tiên để bắt đầu lưu trữ gọn gàng.</p>
+        <button class="btn btn--primary" id="btnEmptyAdd">
+          <span class="material-icons-round">add</span>
+          <span data-i18n="action.add">Thêm giấy tờ</span>
+        </button>
+      </div>
+
+      <div class="empty-state" id="noResultState" hidden>
+        <span class="material-icons-round empty-state__icon">search_off</span>
+        <h3 class="empty-state__title" data-i18n="empty.noResultTitle">Không tìm thấy kết quả</h3>
+        <p class="empty-state__desc" data-i18n="empty.noResultDesc">Thử từ khóa khác hoặc xóa bộ lọc hiện tại.</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============ DOCUMENT DETAIL MODAL ============ -->
+<div class="modal-backdrop" id="detailModal" hidden>
+  <div class="modal modal--detail" role="dialog" aria-modal="true">
+    <div class="modal__header" id="detailHeader">
+      <div class="modal__header-info">
+        <span class="material-icons-round modal__header-icon" id="detailIcon">badge</span>
+        <div>
+          <h2 class="modal__title" id="detailTitle">—</h2>
+          <span class="modal__subtitle" id="detailCategory">—</span>
+        </div>
+      </div>
+      <div class="modal__header-actions">
+        <button class="icon-btn" id="detailFavBtn" title="Favorite"><span class="material-icons-round">star_border</span></button>
+        <button class="icon-btn" id="btnCloseDetail" aria-label="Close"><span class="material-icons-round">close</span></button>
+      </div>
+    </div>
+    <div class="modal__body" id="detailBody">
+      <!-- populated by JS -->
+    </div>
+    <div class="modal__footer">
+      <button class="btn btn--danger-ghost" id="detailDeleteBtn">
+        <span class="material-icons-round">delete_outline</span>
+        <span data-i18n="action.delete">Xóa</span>
+      </button>
+      <button class="btn btn--secondary" id="detailEditBtn">
+        <span class="material-icons-round">edit</span>
+        <span data-i18n="action.edit">Chỉnh sửa</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADD/EDIT FORM MODAL ============ -->
+<div class="modal-backdrop" id="formModal" hidden>
+  <div class="modal modal--form" role="dialog" aria-modal="true">
+    <div class="modal__header">
+      <h2 class="modal__title" id="formModalTitle" data-i18n="form.addTitle">Thêm giấy tờ mới</h2>
+      <button class="icon-btn" id="btnCloseForm" aria-label="Close"><span class="material-icons-round">close</span></button>
+    </div>
+    <form class="modal__body form" id="docForm">
+      <input type="hidden" id="docId">
+
+      <div class="form__group">
+        <label data-i18n="form.category">Loại giấy tờ</label>
+        <div class="category-picker" id="categoryPicker"></div>
+      </div>
+
+      <div class="form__row">
+        <div class="form__group form__group--grow">
+          <label for="fieldName" data-i18n="form.name">Tên giấy tờ</label>
+          <input type="text" id="fieldName" required data-i18n-placeholder="form.namePlaceholder" placeholder="VD: CCCD Nguyễn Văn A">
+        </div>
+      </div>
+
+      <div class="form__row">
+        <div class="form__group form__group--grow">
+          <label for="fieldNumber" data-i18n="form.number">Số giấy tờ</label>
+          <input type="text" id="fieldNumber" class="mono-input" data-i18n-placeholder="form.numberPlaceholder" placeholder="001234567890">
+        </div>
+        <div class="form__group">
+          <label for="fieldHolder" data-i18n="form.holder">Chủ sở hữu</label>
+          <input type="text" id="fieldHolder" data-i18n-placeholder="form.holderPlaceholder" placeholder="Nguyễn Văn A">
+        </div>
+      </div>
+
+      <div class="form__row">
+        <div class="form__group">
+          <label for="fieldIssueDate" data-i18n="form.issueDate">Ngày cấp</label>
+          <input type="date" id="fieldIssueDate">
+        </div>
+        <div class="form__group">
+          <label for="fieldExpiryDate" data-i18n="form.expiryDate">Ngày hết hạn</label>
+          <input type="date" id="fieldExpiryDate">
+        </div>
+      </div>
+
+      <div class="form__row">
+        <div class="form__group form__group--grow">
+          <label for="fieldIssuePlace" data-i18n="form.issuePlace">Nơi cấp</label>
+          <input type="text" id="fieldIssuePlace" data-i18n-placeholder="form.issuePlacePlaceholder" placeholder="VD: Cục Cảnh sát QLHC về TTXH">
+        </div>
+      </div>
+
+      <div class="form__group">
+        <label for="fieldNotes" data-i18n="form.notes">Ghi chú</label>
+        <textarea id="fieldNotes" rows="2" data-i18n-placeholder="form.notesPlaceholder" placeholder="Ghi chú thêm..."></textarea>
+      </div>
+
+      <div class="form__group">
+        <label data-i18n="form.images">Hình ảnh (mặt trước / mặt sau)</label>
+        <div class="image-upload">
+          <label class="image-drop" id="dropFront">
+            <input type="file" accept="image/*" id="fieldImageFront" hidden>
+            <img id="previewFront" hidden>
+            <div class="image-drop__placeholder" id="placeholderFront">
+              <span class="material-icons-round">add_photo_alternate</span>
+              <span data-i18n="form.frontSide">Mặt trước</span>
+            </div>
+            <button type="button" class="image-drop__remove" id="removeFront" hidden><span class="material-icons-round">close</span></button>
+          </label>
+          <label class="image-drop" id="dropBack">
+            <input type="file" accept="image/*" id="fieldImageBack" hidden>
+            <img id="previewBack" hidden>
+            <div class="image-drop__placeholder" id="placeholderBack">
+              <span class="material-icons-round">add_photo_alternate</span>
+              <span data-i18n="form.backSide">Mặt sau</span>
+            </div>
+            <button type="button" class="image-drop__remove" id="removeBack" hidden><span class="material-icons-round">close</span></button>
+          </label>
+        </div>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" id="fieldFavorite">
+        <span data-i18n="form.markFavorite">Đánh dấu yêu thích</span>
+      </label>
+    </form>
+    <div class="modal__footer">
+      <button class="btn btn--ghost" id="btnCancelForm" data-i18n="action.cancel">Hủy</button>
+      <button class="btn btn--primary" id="btnSaveForm" form="docForm" type="submit">
+        <span class="material-icons-round">check</span>
+        <span data-i18n="action.save">Lưu lại</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SETTINGS MODAL ============ -->
+<div class="modal-backdrop" id="settingsModal" hidden>
+  <div class="modal modal--settings" role="dialog" aria-modal="true">
+    <div class="modal__header">
+      <h2 class="modal__title" data-i18n="settings.title">Cài đặt</h2>
+      <button class="icon-btn" id="btnCloseSettings" aria-label="Close"><span class="material-icons-round">close</span></button>
+    </div>
+    <div class="modal__body">
+      <div class="settings-section">
+        <h3 data-i18n="settings.appearance">Giao diện</h3>
+        <div class="settings-row">
+          <span data-i18n="settings.theme">Chủ đề</span>
+          <div class="theme-switch theme-switch--modal" id="themeSwitchModal">
+            <button class="theme-switch__btn" data-theme="light"><span class="material-icons-round">light_mode</span><span data-i18n="theme.light">Sáng</span></button>
+            <button class="theme-switch__btn" data-theme="dark"><span class="material-icons-round">dark_mode</span><span data-i18n="theme.dark">Tối</span></button>
+            <button class="theme-switch__btn" data-theme="system"><span class="material-icons-round">brightness_auto</span><span data-i18n="theme.system">Hệ thống</span></button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <span data-i18n="settings.language">Ngôn ngữ</span>
+          <div class="theme-switch" id="langSwitchModal">
+            <button class="theme-switch__btn" data-lang="vi">Tiếng Việt</button>
+            <button class="theme-switch__btn" data-lang="en">English</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <span data-i18n="settings.expiryThreshold">Ngưỡng cảnh báo hết hạn</span>
+          <select id="expiryThresholdSelect" class="select">
+            <option value="7">7 <span data-i18n="settings.days">ngày</span></option>
+            <option value="14">14</option>
+            <option value="30">30</option>
+            <option value="60">60</option>
+            <option value="90">90</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3 data-i18n="settings.dataManagement">Quản lý dữ liệu</h3>
+        <p class="settings-desc" data-i18n="settings.dataDesc">Dữ liệu được lưu trên trình duyệt của bạn (localStorage). Hãy sao lưu định kỳ để tránh mất dữ liệu.</p>
+        <div class="settings-actions">
+          <button class="btn btn--secondary" id="btnExportData">
+            <span class="material-icons-round">file_download</span>
+            <span data-i18n="settings.export">Xuất dữ liệu (JSON)</span>
+          </button>
+          <button class="btn btn--secondary" id="btnImportData">
+            <span class="material-icons-round">file_upload</span>
+            <span data-i18n="settings.import">Nhập dữ liệu</span>
+          </button>
+          <input type="file" id="importFileInput" accept="application/json" hidden>
+          <button class="btn btn--danger-ghost" id="btnClearData">
+            <span class="material-icons-round">delete_forever</span>
+            <span data-i18n="settings.clearAll">Xóa toàn bộ dữ liệu</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h3 data-i18n="settings.about">Thông tin</h3>
+        <p class="settings-desc">
+          <span data-i18n="app.name">Ví Giấy Tờ</span> — v1.0.0<br>
+          <span data-i18n="settings.author">Tác giả</span>: trongsigmaprovip<br>
+          <span data-i18n="settings.aiCredit">Được hỗ trợ phát triển cùng</span> Claude (Anthropic)
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONFIRM DIALOG ============ -->
+<div class="modal-backdrop" id="confirmModal" hidden>
+  <div class="modal modal--confirm" role="alertdialog" aria-modal="true">
+    <span class="material-icons-round confirm__icon" id="confirmIcon">warning_amber</span>
+    <h3 class="confirm__title" id="confirmTitle">—</h3>
+    <p class="confirm__desc" id="confirmDesc">—</p>
+    <div class="confirm__actions">
+      <button class="btn btn--ghost" id="confirmCancelBtn" data-i18n="action.cancel">Hủy</button>
+      <button class="btn btn--danger" id="confirmOkBtn" data-i18n="action.confirmDelete">Xóa</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="js/i18n.js"></script>
+<script src="js/theme.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
