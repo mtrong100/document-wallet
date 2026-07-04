@@ -512,7 +512,7 @@ img { max-width: 100%; display: block; }
 .modal__title { font-size: 17px; font-weight: 800; }
 .modal__subtitle { font-size: 12.5px; color: var(--on-surface-variant); }
 
-.modal__body { padding: 22px; overflow-y: auto; }
+.modal__body { padding: 22px; overflow-y: auto; overflow-x: hidden; }
 .modal__footer {
   display: flex; align-items: center; justify-content: flex-end; gap: 10px;
   padding: 16px 22px;
@@ -521,10 +521,21 @@ img { max-width: 100%; display: block; }
 }
 
 /* ---- Detail body ---- */
-.detail-images { display: flex; gap: 12px; margin-bottom: 20px; }
+.detail-images { 
+  display: flex; 
+  gap: 12px; 
+  margin-bottom: 20px; 
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+}
 .detail-images img {
-  flex: 1; border-radius: var(--radius-m); object-fit: cover;
-  aspect-ratio: 1.586; border: 1px solid var(--outline-variant);
+  flex: 1 0 85%; 
+  scroll-snap-align: start;
+  border-radius: var(--radius-m); 
+  object-fit: cover;
+  aspect-ratio: 1.586; 
+  border: 1px solid var(--outline-variant);
 }
 .detail-field {
   display: flex; align-items: center; justify-content: space-between;
@@ -654,6 +665,32 @@ img { max-width: 100%; display: block; }
 .toast--error .material-icons-round { color: #FF8A80; }
 @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
+/* ==========================================================================
+   Image Viewer
+   ========================================================================== */
+.image-viewer-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+  padding: 20px;
+}
+.image-viewer-backdrop[hidden] { display: none; }
+.image-viewer__close {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 50%;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+}
+.image-viewer__close:hover { background: rgba(255, 255, 255, 0.3); }
+.image-viewer__img {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-m);
+}
 /* ==========================================================================
    Responsive
    ========================================================================== */
