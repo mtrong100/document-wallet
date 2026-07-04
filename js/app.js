@@ -108,6 +108,11 @@
     confirmCancelBtn: $('#confirmCancelBtn'),
 
     toastContainer: $('#toastContainer'),
+
+    // Image viewer
+    imageViewerModal: $('#imageViewerModal'),
+    imageViewerImg: $('#imageViewerImg'),
+    btnCloseImageViewer: $('#btnCloseImageViewer'),
   };
 
   // ==========================================================================
@@ -435,8 +440,8 @@
     let imagesHtml = '';
     if (doc.imageFront || doc.imageBack) {
       imagesHtml = `<div class="detail-images">
-        ${doc.imageFront ? `<img src="${doc.imageFront}" alt="Front">` : ''}
-        ${doc.imageBack ? `<img src="${doc.imageBack}" alt="Back">` : ''}
+        ${doc.imageFront ? `<img src="${doc.imageFront}" alt="Front" class="zoomable-img" style="cursor: zoom-in;">` : ''}
+        ${doc.imageBack ? `<img src="${doc.imageBack}" alt="Back" class="zoomable-img" style="cursor: zoom-in;">` : ''}
       </div>`;
     }
 
@@ -466,6 +471,12 @@
     el.detailBody.querySelectorAll('[data-copy]').forEach(btn => {
       btn.addEventListener('click', () => {
         navigator.clipboard?.writeText(btn.dataset.copy).then(() => toast(I18N.t('toast.copied'), 'success', 'content_copy'));
+    });
+
+    el.detailBody.querySelectorAll('.zoomable-img').forEach(img => {
+      img.addEventListener('click', () => {
+        el.imageViewerImg.src = img.src;
+        el.imageViewerModal.hidden = false;
       });
     });
 
@@ -744,6 +755,18 @@
     if ((e.key === '/' ) && document.activeElement !== el.searchInput) {
       const tag = document.activeElement.tagName;
       if (tag !== 'INPUT' && tag !== 'TEXTAREA') { e.preventDefault(); el.searchInput.focus(); }
+    }
+  });
+
+  // ==========================================================================
+  // Image Viewer Events
+  // ==========================================================================
+  el.btnCloseImageViewer.addEventListener('click', () => {
+    el.imageViewerModal.hidden = true;
+  });
+  el.imageViewerModal.addEventListener('click', (e) => {
+    if (e.target === el.imageViewerModal) {
+      el.imageViewerModal.hidden = true;
     }
   });
 
