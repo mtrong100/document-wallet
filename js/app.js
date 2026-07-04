@@ -471,6 +471,7 @@
     el.detailBody.querySelectorAll('[data-copy]').forEach(btn => {
       btn.addEventListener('click', () => {
         navigator.clipboard?.writeText(btn.dataset.copy).then(() => toast(I18N.t('toast.copied'), 'success', 'content_copy'));
+      });
     });
 
     el.detailBody.querySelectorAll('.zoomable-img').forEach(img => {
